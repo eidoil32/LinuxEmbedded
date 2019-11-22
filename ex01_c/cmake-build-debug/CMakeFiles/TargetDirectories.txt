@@ -1,3 +1,0 @@
-/home/ido/CLionProjects/LinuxEmbedded/ex01_c/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/ido/CLionProjects/LinuxEmbedded/ex01_c/cmake-build-debug/CMakeFiles/ex01_c.dir
-/home/ido/CLionProjects/LinuxEmbedded/ex01_c/cmake-build-debug/CMakeFiles/edit_cache.dir

@@ -1,0 +1,44 @@
+----------------------------------------------------------------------
+
+	██████╗ ███████╗ █████╗ ██████╗ ███╗   ███╗███████╗
+	██╔══██╗██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝
+	██████╔╝█████╗  ███████║██║  ██║██╔████╔██║█████╗  
+	██╔══██╗██╔══╝  ██╔══██║██║  ██║██║╚██╔╝██║██╔══╝  
+	██║  ██║███████╗██║  ██║██████╔╝██║ ╚═╝ ██║███████╗
+	╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝╚══════╝
+
+-----------------------------------------------------------------------
+Submitted by:
+	1. Ido Hayun
+	2. Benny Darshen
+	3. Haim Zisman
+	4. Ran Zur
+-----------------------------------------------------------------------
+PROG(1)				USER COMMANDS	  		PROG(1)
+
+NAME
+	prog - using to manage blockchain
+
+SYNOPSIS
+	prog [OPTION]
+	prog [OPTION]... PARAMETER
+
+DESCRIPTION
+	Can print all blockchains, or filter by hash or height.
+	also, export to csv and reload the database.
+
+	--hash 		[parameter]
+			display the spacific block with the hash=[parameter]
+	
+	--height 	[parameter]
+			display the spacific block with the height=[parameter]
+
+	--csv
+			exporting to .csv file ('blockdb.csv').
+
+	--rel
+			reload the database by running the script.sh
+
+-----------------------------------------------------------------------
+			END OF README FILE
+-----------------------------------------------------------------------

@@ -1,0 +1,2 @@
+gcc -shared -fPIC -o libmanager.so libmanager.c
+gcc -o prog Program.c -L=$(pwd) -lmanager -Wl,-rpath=$(pwd)

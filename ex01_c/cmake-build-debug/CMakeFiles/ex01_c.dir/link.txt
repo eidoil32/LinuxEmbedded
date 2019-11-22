@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/ex01_c.dir/main.c.o CMakeFiles/ex01_c.dir/MainChain.c.o CMakeFiles/ex01_c.dir/Miscellaneous.c.o CMakeFiles/ex01_c.dir/Block.c.o  -o ex01_c 
