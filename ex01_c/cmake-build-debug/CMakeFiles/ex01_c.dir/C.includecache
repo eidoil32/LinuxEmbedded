@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/Block.c
+Block.h
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/Block.h
+
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/Block.h
+stdio.h
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/stdio.h
+string.h
+-
+Miscellaneous.h
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/Miscellaneous.h
+
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/Miscellaneous.h
+stdio.h
+/home/ido/CLionProjects/LinuxEmbedded/ex01_c/stdio.h
+stdlib.h
+-
+
