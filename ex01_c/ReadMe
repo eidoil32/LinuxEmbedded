@@ -9,19 +9,20 @@
 
 -----------------------------------------------------------------------
 Submitted by:
-	1. Ido Hayun
-	2. Benny Darshen
-	3. Haim Zisman
-	4. Ran Zur
+	1. Ido Hayun		- 204062574
+	2. Benny Darshen	- 203249131
+	3. Haim Zisman		- 204410005
+	4. Ran Tzur		- 301728069
 -----------------------------------------------------------------------
-PROG(1)				USER COMMANDS	  		PROG(1)
+			PrintBlock application
+-----------------------------------------------------------------------
+PRINTBLOCK(1)		   USER COMMANDS                  PRINTBLOCK(1)
 
 NAME
-	prog - using to manage blockchain
+	printblock - using to print spacific blockchain
 
 SYNOPSIS
-	prog [OPTION]
-	prog [OPTION]... PARAMETER
+	printblock [OPTION]... PARAMETER
 
 DESCRIPTION
 	Can print all blockchains, or filter by hash or height.
@@ -32,13 +33,46 @@ DESCRIPTION
 	
 	--height 	[parameter]
 			display the spacific block with the height=[parameter]
+-----------------------------------------------------------------------
+			dbtocsv application
+-----------------------------------------------------------------------
+DBTOCSV(1)		   USER COMMANDS                    DBTOCSV(1)
 
-	--csv
-			exporting to .csv file ('blockdb.csv').
+NAME
+	dbtocsv - using to export database to csv file
 
-	--rel
-			reload the database by running the script.sh
+SYNOPSIS
+	dbtocsv
 
+DESCRIPTION
+	export all blockchains from database (file blockdb) to csv
+	called 'a.csv'
+-----------------------------------------------------------------------
+			printdb application
+-----------------------------------------------------------------------
+PRINTDB(1)		   USER COMMANDS                    PRINTDB(1)
+
+NAME
+	printdb - using to print all database
+
+SYNOPSIS
+	printdb
+
+DESCRIPTION
+	print all blockchains in the database file (blockdb)
+-----------------------------------------------------------------------
+			load_db application
+-----------------------------------------------------------------------
+LOAD_DB(1)		   USER COMMANDS                    LOAD_DB(1)
+
+NAME
+	load_db - using to reloading the database
+
+SYNOPSIS
+	load_db
+
+DESCRIPTION
+	loading the database using './script.sh' shell command
 -----------------------------------------------------------------------
 			END OF README FILE
 -----------------------------------------------------------------------

@@ -1,12 +1,24 @@
-PROG = prog
+PROG 		= prog
 current_dir = $(shell pwd)
+CC      	= gcc
+LIBS		= -lpthread
+
 all: $(PROG)
 
 libmanager.so: libmanager.c
-	gcc -shared -fPIC -o libmanager.so libmanager.c
+	$(CC) -shared -fPIC -o libmanager.so libmanager.c
 
-$(PROG): libmanager.so
-	gcc -o prog program.c -L=${current_dir} -lmanager -Wl,-rpath=${current_dir}
+SRCS := $(subst ./,,$(shell find . -name "*.c" ! -name "libmanager.c"))
+
+OBJS := $(patsubst %.c,%.out,$(SRCS))
+
+$(PROG): libmanager.so $(OBJS)
+
+%.out: %.c
+	$(CC) $^ -o $@ $(LIBS) -L=$(current_dir) -lmanager -Wl,-rpath=$(current_dir)
 
 clean:
-	rm -vf *.o ${PROG} *.so *.out blockdb *.csv
+	rm -vf *.o ${PROG} *.so *.out  *.csv
+
+
+#add blockdb

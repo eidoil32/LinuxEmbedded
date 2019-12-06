@@ -27,12 +27,12 @@ static char *blockKeys[BLOCK_SIZE] = { KEY_MAP_HASH, KEY_MAP_HEIGHT, KEY_MAP_TOT
                                        KEY_MAP_TIME, KEY_MAP_RELAYED_BY, KEY_MAP_PREV_BLOCK };
 
 // custom strings
-#define CSV_FILE 				"blockdb.csv"
+#define CSV_FILE 				    "a.csv"
 #define COMMAND_DELIMITER 			"-"
-#define COMMAND_EXPORT_TO_CSV 			"CSV"
-#define COMMAND_BLOCK_BY_HASH 			"HASH"
-#define COMMAND_BLOCK_BY_HEIGHT 		"HEIGHT"
-#define COMMAND_RELOAD_DATABASE 		"REL"
+#define COMMAND_EXPORT_TO_CSV 		"CSV"
+#define COMMAND_BLOCK_BY_HASH 		"HASH"
+#define COMMAND_BLOCK_BY_HEIGHT 	"HEIGHT"
+#define COMMAND_RELOAD_DATABASE 	"REL"
 #define BLOCK_NOT_FOUND 			"error: block not found\n"
 #define COMMAND_NOT_FOUND 			"error: the command '%s' not found\n"
 #define UNKNOWN_ERROR   			"fatal error: unknown\n"
