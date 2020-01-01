@@ -29,8 +29,11 @@ void start() {
 	program.server = initServer();
 	program.miners = (Miners)malloc(MINERS_SIZE);
 
-	loadUpMiners(program.miners);
+	addNode(program.server->blocks, createFirstBlock());
+	lastBlock = (BLOCK_T*)(&program.server->blocks->head->data);
+
 	loadUpServer(program.server);
+	loadUpMiners(program.miners);
 
 	pthread_join(program.server->threadID, NULL); // wait for server to finish == NEVER! user need to stop application; 
 												  // can be replace with: waitForThreads(program) ?
@@ -53,10 +56,11 @@ void loadUpServer(Server server) {
 	parms[LAST_BLOCK_INDEX] 	= &lastBlock;
 	parms[BLOCK_TO_ADD_INDEX] 	= &blockToAdd;
 	Package pack = initPackage(parms);
-	server->blockToAdd_lock = blockToAdd_lock;
-	server->lastBlock_lock = lastBlock_lock;
-	server->newBlockWasAdded = newBlockWasAdded;
-	server->blockEvent = blockEvent;
+	server->blockToAdd_lock = &blockToAdd_lock;
+	server->lastBlock_lock = &lastBlock_lock;
+	server->newBlockWasAdded = &newBlockWasAdded;
+	server->blockEvent = &blockEvent;
+
 	pthread_create(&server->threadID, NULL, serverEngine, pack);
 }
 
@@ -67,10 +71,10 @@ void loadUpMiners(Miners miners) {
 			if (!addNode(miners, miner)) {
 				fprintf(stderr, ERROR_CREATING_NEW_NODE);
 			} else { // adding miner to list successeded, not create a thread for him
-				miner->blockToAdd_lock = blockToAdd_lock;
-				miner->lastBlock_lock = lastBlock_lock;
-				miner->newBlockWasAdded = newBlockWasAdded;
-				miner->blockEvent = blockEvent;
+				miner->blockToAdd_lock = &blockToAdd_lock;
+				miner->lastBlock_lock = &lastBlock_lock;
+				miner->newBlockWasAdded = &newBlockWasAdded;
+				miner->blockEvent = &blockEvent;
 				void **parms = (void**)malloc(3 * sizeof(void*));
 				parms[MINER_INDEX] 			= miner;
 				parms[LAST_BLOCK_INDEX] 	= &lastBlock;

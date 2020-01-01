@@ -26,11 +26,11 @@ struct package {
 };
 
 // for easier readability
-typedef char* String;
-typedef struct list* List;
-typedef struct package* Package;
-#define LIST_SIZE sizeof(struct list)
-#define PACKAGE_SIZE	sizeof(struct package)
+typedef char* 							String;
+typedef struct list* 					List;
+typedef struct package* 				Package;
+#define LIST_SIZE 						sizeof(struct list)
+#define PACKAGE_SIZE					sizeof(struct package)
 
 // functions
 void freeList(List list);

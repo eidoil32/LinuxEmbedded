@@ -1,22 +1,17 @@
 # Makefile for ex2-q1 winter 2019A
 CFLAGS 		= -Wall
-CC 			= gcc -std=c99
+CC 			= gcc -std=c99 -ggdb
 ZLIG_ADDON 	= -lz
 
 OS := $(shell uname)
-ifneq (,$(findstring CYGWIN_NT,$(OS)))
-EXT = .exe
-else
-EXT =
-endif
 
-PROG = program$(EXT)
+PROG = Program
 
 all: $(PROG) #$(HELPER) test
 
 $(PROG) : Program.o Server.o Miscellaneous.o Miner.o Block.o
 	@echo -n compiling $@ ... 
-	@$(CC) $(CFLAGS) Program.o Server.o Miscellaneous.o Miner.o Block.o -o $(PROG) $(ZLIG_ADDON) -lm
+	@$(CC) $(CFLAGS) -pthread Program.o Server.o Miscellaneous.o Miner.o Block.o -o $(PROG) $(ZLIG_ADDON) -lm
 	@echo  [OK]
 	
 clean:

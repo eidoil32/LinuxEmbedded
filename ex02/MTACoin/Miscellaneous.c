@@ -16,7 +16,7 @@ Node addNode(List list, void* data) {
 	if (node) {
 		node->data = data;
 		node->next = NULL;
-		if (list->head) { // empty list
+		if (!list->head) { // empty list
 			list->head = list->tail = node;
 		} else {
 			node->prev = list->tail;

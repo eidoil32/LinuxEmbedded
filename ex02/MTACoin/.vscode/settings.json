@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "server.h": "c",
-        "block.h": "c"
+        "block.h": "c",
+        "program.h": "c",
+        "miscellaneous.h": "c",
+        "pthread.h": "c",
+        "stdlib.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
