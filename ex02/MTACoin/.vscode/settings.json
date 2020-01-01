@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "server.h": "c",
+        "block.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
+}
