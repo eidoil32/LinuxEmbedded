@@ -11,7 +11,7 @@ static StaticBlock lastBlock;
 /*	if NULL then server will wait for miners to create the next block,
 	if *NOT* NULL then server will need check if the block is ok and add it to list.
 	When server taking block to check he will change 'blockToAdd' to NULL again. */
-static Package blockToAdd = NULL;
+static BlockPackage blockToAdd = NULL;
 
 pthread_mutex_t lastBlock_lock 	= PTHREAD_MUTEX_INITIALIZER, 
 				blockToAdd_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -29,9 +29,10 @@ void start() {
 	program.server = initServer();
 	program.miners = (Miners)malloc(MINERS_SIZE);
 
+	// initialization first block for server
 	addNode(program.server->blocks, createFirstBlock());
 	lastBlock = (BLOCK_T*)(&program.server->blocks->head->data);
-
+	
 	loadUpServer(program.server);
 	loadUpMiners(program.miners);
 

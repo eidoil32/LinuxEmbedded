@@ -17,12 +17,14 @@ Node addNode(List list, void* data) {
 		node->data = data;
 		node->next = NULL;
 		if (!list->head) { // empty list
+			list->size = 0;
 			list->head = list->tail = node;
 		} else {
 			node->prev = list->tail;
 			list->tail->next = node;
 			list->tail = node;
 		}
+		list->size++;
 	} else { // allocate memory for new node failed
 		fprintf(stderr, ERROR_CREATING_NEW_NODE);
 	}
