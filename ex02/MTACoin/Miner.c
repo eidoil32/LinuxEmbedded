@@ -31,8 +31,9 @@ void* minerEngine(void* inputMiner) {
 
 		BLOCK_T newBlock = calculateNewBlock(miner, &localLastBlock);
 		pthread_mutex_lock(&global_blockToAdd_lock);
-		if (global_blockToAdd != NULL) {
+		if (*global_blockToAdd) {
 			pthread_cond_wait(&global_newBlockWasAdded, &global_blockToAdd_lock);
+			pthread_mutex_unlock(&global_blockToAdd_lock);
 			continue; // new block was added, so we check if it's updated and calculate new one;
 		}
 

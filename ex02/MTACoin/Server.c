@@ -7,6 +7,7 @@ Server initServer() {
 }
 
 bool checkBlock(BLOCK_T block) {
+	//printf("block: %d, calcHash=%d, block->hash=%d\n", block->hash & MASK_LAST_16_BITS, calcHash(block),block->hash);
 	return (!(block->hash & MASK_LAST_16_BITS)) && (block->hash == calcHash(block));
 }	//   if block->hash & 0xFFFF0000 == 0 ^
 
@@ -44,13 +45,14 @@ void *serverEngine(void *inputServer) {
 
 	while(true) {
 		pthread_mutex_lock(&global_blockToAdd_lock);
-		if (*global_blockToAdd != NULL) {
+		if (!(*global_blockToAdd)) {
 			pthread_cond_wait(&global_blockEvent, &global_blockToAdd_lock);
 		}
 
-		BLOCK_T block = *global_blockToAdd;
+		BLOCK_T block = copyCtor(*global_blockToAdd);
 		*global_blockToAdd = NULL;
 		pthread_mutex_unlock(&global_blockToAdd_lock);  // prevent deadlock (?) or should be in the end of this section
+		pthread_cond_broadcast(&global_newBlockWasAdded);
 		if(approveBlock(block, server->blocks)) { // update lastBlock to point on the new block
 			pthread_mutex_lock(&global_lastBlock_lock);
 			global_lastBlock = &block;

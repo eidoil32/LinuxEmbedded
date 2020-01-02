@@ -6,34 +6,42 @@ int main(int argc, String argv[]) {
 }
 
 void start() {
-	Program program;
-	global_lastBlock 			= (struct block_t**)calloc(1, sizeof(struct block_t*));
-	global_blockToAdd			= (struct block_t**)calloc(1, sizeof(struct block_t*));
-	global_lastBlock_lock 		= PTHREAD_MUTEX_INITIALIZER, 
-	global_blockToAdd_lock 		= PTHREAD_MUTEX_INITIALIZER;
+	Program program = initProgram();
 
-	global_blockEvent 			= PTHREAD_COND_INITIALIZER,
-	global_newBlockWasAdded 	= PTHREAD_COND_INITIALIZER;
-	program.server = initServer();
-	program.miners = (Miners)malloc(MINERS_SIZE);
-
-	// initialization first block for server
-	addNode(program.server->blocks, createFirstBlock());
-	global_lastBlock = (struct block_t**) &program.server->blocks->head->data;
-	
-	loadUpServer(program.server);
-	loadUpMiners(program.miners);
-
-	pthread_join(program.server->threadID, NULL); // wait for server to finish == NEVER! user need to stop application; 
+	pthread_join(program->server->threadID, NULL); // wait for server to finish == NEVER! user need to stop application; 
 												  // can be replace with: waitForThreads(program) ?
 												  // it's enough waiting for server?
 	programEnd(program);
 }
 
+Program initProgram() {
+	Program program = (Program)calloc(1, PROGRAM_STRUCT_SIZE);
+	global_lastBlock 			= (struct block_t**)calloc(1, sizeof(struct block_t*));
+	global_blockToAdd			= (struct block_t**)calloc(1, sizeof(struct block_t*));
+	global_lastBlock_lock 		= (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+	global_blockToAdd_lock 		= (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+
+	global_blockEvent 			= (pthread_cond_t) PTHREAD_COND_INITIALIZER;
+	global_newBlockWasAdded 	= (pthread_cond_t) PTHREAD_COND_INITIALIZER;
+
+	// init server and miners array
+	program->server = initServer();
+	program->miners = (Miners)malloc(MINERS_SIZE);
+
+	// initialization first block for server
+	addNode(program->server->blocks, createFirstBlock());
+	global_lastBlock = (struct block_t**) &program->server->blocks->head->data;
+
+	loadUpServer(program->server);
+	loadUpMiners(program->miners);
+
+	return program;
+}
+
 void waitForThreads(Program program) {
-	pthread_join(program.server->threadID, NULL); // wait for server;
+	pthread_join(program->server->threadID, NULL); // wait for server;
 	
-	Node miner = program.miners->head;
+	Node miner = program->miners->head;
 	while (miner) {
 		pthread_join(((Miner)miner->data)->threadID, NULL);
 	}
@@ -59,9 +67,10 @@ void loadUpMiners(Miners miners) {
 }
 
 void programEnd(Program program) {
-	freeList(program.miners); 			// deleting all miners
-	free(program.miners);
-	freeList(program.server->blocks); 	// deleting all blocks from memory
-	free(program.server->blocks); 
-	free(program.server); 
+	freeList(program->miners); 			// deleting all miners
+	free(program->miners);
+	freeList(program->server->blocks); 	// deleting all blocks from memory
+	free(program->server->blocks); 
+	free(program->server); 
+	free(program);
 }

@@ -39,6 +39,7 @@ typedef struct list* 					List;
 void freeList(List list);
 Node addNode(List list, void* data);
 int getCurrentTimeStamp();
+struct block_t* copyCtor(struct block_t* block);
 
 // errors strings
 #define ERROR_CREATING_SERVER_OBJECT	"Error: creating server object failed!"

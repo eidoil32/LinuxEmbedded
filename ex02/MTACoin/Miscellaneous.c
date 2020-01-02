@@ -1,4 +1,5 @@
 #include "Miscellaneous.h"
+#include "Block.h"
 
 // data of Node must be none-static memory (allocated in runtime)
 void freeList(List list) {
@@ -30,6 +31,17 @@ Node addNode(List list, void* data) {
 	}
 
 	return node;
+}
+
+BLOCK_T copyCtor(BLOCK_T block) {
+	BLOCK_T newBlock = initBlock(block->relayed_by);
+	newBlock->height = block->height;
+	newBlock->hash = block->hash;
+	newBlock->prev_hash = block->prev_hash;
+	newBlock->nonce = block->nonce;
+
+	free(block);
+	return newBlock;
 }
 
 // get current timestamp

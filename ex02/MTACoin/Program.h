@@ -6,11 +6,15 @@
 #include "Miner.h"
 
 
-typedef struct program {
+struct program {
 	Server server;
 	Miners miners;
-}Program;
+};
 
+typedef struct program* 			Program;
+#define PROGRAM_STRUCT_SIZE			sizeof(struct program)
+
+Program initProgram();
 void start();
 void programEnd(Program program);
 void loadUpServer(Server server);
