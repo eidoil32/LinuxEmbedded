@@ -9,6 +9,14 @@
 #include <zlib.h>
 #include <time.h>
 
+struct block_t	**global_lastBlock, **global_blockToAdd;
+
+pthread_mutex_t global_lastBlock_lock, 
+				global_blockToAdd_lock;
+
+pthread_cond_t 	global_blockEvent,
+				global_newBlockWasAdded;
+
 struct node {
 	void* data;
 	struct node* next, *prev;
@@ -22,23 +30,10 @@ struct list {
 	unsigned int size;
 };
 
-struct package {
-	void **parms;
-};
-
-struct blockPackage {
-	struct miner* creator;
-	struct block_t* newBlock;
-};
-
 // for easier readability
 typedef char* 							String;
 typedef struct list* 					List;
-typedef struct package* 				Package;
-typedef struct blockPackage*			BlockPackage;
 #define LIST_SIZE 						sizeof(struct list)
-#define PACKAGE_SIZE					sizeof(struct package)
-#define BLOCK_PACKAGE_SIZE				sizeof(struct blockPackage)
 
 // functions
 void freeList(List list);

@@ -7,8 +7,6 @@
 //server id = -1 in first block;
 struct server { 
 	pthread_t threadID;
-	pthread_cond_t *blockEvent, *newBlockWasAdded;
-	pthread_mutex_t *lastBlock_lock, *blockToAdd_lock;
 	List blocks;
 };
 
@@ -18,7 +16,7 @@ typedef struct server* 	Server;
 
 Server initServer();
 bool checkBlock(BLOCK_T block);
-bool approveBlock(BLOCK_T block, Miner miner, List blocks);
+bool approveBlock(BLOCK_T block, List blocks);
 void *serverEngine(void* inputPackage);
 BLOCK_T createFirstBlock();
 #endif

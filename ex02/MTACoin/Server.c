@@ -10,15 +10,18 @@ bool checkBlock(BLOCK_T block) {
 	return (!(block->hash & MASK_LAST_16_BITS)) && (block->hash == calcHash(block));
 }	//   if block->hash & 0xFFFF0000 == 0 ^
 
-bool approveBlock(BLOCK_T block, Miner miner, List blocks) {
+bool approveBlock(BLOCK_T block, List blocks) {
 	BLOCK_T last = (BLOCK_T)blocks->tail->data;
 	if (checkBlock(block)) {
 		if (last->hash == block->prev_hash) {
+			printf(SERVER_APPROVED_BLOCK_BY_MINER, block->relayed_by, block->height, block->timestamp, 
+					block->hash, block->prev_hash, block->difficulty, block->nonce);
+			addNode(blocks, block);
 			return true;
 		}
 	}
 
-	printf(SERVER_WRONG_BLOCK, block->height, miner->id, block->hash, calcHash(block));
+	printf(SERVER_WRONG_BLOCK, block->height, block->relayed_by, block->hash, calcHash(block));
 	return false;
 }
 
@@ -36,33 +39,23 @@ BLOCK_T createFirstBlock() {
 	return block;
 }
 
-void *serverEngine(void *inputPackage) {
-	Package package = (Package)inputPackage;
-	Server server = (Server)package->parms[SERVER_INDEX];
-	StaticBlock* lastBlock = (StaticBlock*)package->parms[LAST_BLOCK_INDEX];
-	BlockPackage* blockToAdd = (BlockPackage*)package->parms[BLOCK_TO_ADD_INDEX];
+void *serverEngine(void *inputServer) {
+	Server server = (Server)inputServer;
 
 	while(true) {
-		pthread_mutex_lock(server->blockToAdd_lock);
-		if (!(*blockToAdd)) {
-			pthread_cond_wait(server->blockEvent, server->blockToAdd_lock);
+		pthread_mutex_lock(&global_blockToAdd_lock);
+		if (*global_blockToAdd != NULL) {
+			pthread_cond_wait(&global_blockEvent, &global_blockToAdd_lock);
 		}
 
-		BLOCK_T block = (*blockToAdd)->newBlock;
-		Miner miner = (*blockToAdd)->creator;
-		free(*blockToAdd); // make it NULL for other miners to try
-		*blockToAdd = NULL;
-		pthread_mutex_unlock(server->blockToAdd_lock);  // prevent deadlock (?) or should be in the end of this section
-		if(approveBlock(block, miner, server->blocks)) { // update lastBlock to point on the new block
-			printf("Block has approved, tring to get lock\n");
-			pthread_mutex_lock(server->lastBlock_lock);
-			printf("Got the lock!\n");
-			printf(SERVER_APPROVED_BLOCK_BY_MINER, miner->id, block->height, block->timestamp, 
-					block->hash, block->prev_hash, block->difficulty, block->nonce);
-			addNode(server->blocks, block);
-			*lastBlock = &block;
-			pthread_mutex_unlock(server->lastBlock_lock);
-			pthread_cond_broadcast(server->newBlockWasAdded); 	/* notify miners that new block was 
+		BLOCK_T block = *global_blockToAdd;
+		*global_blockToAdd = NULL;
+		pthread_mutex_unlock(&global_blockToAdd_lock);  // prevent deadlock (?) or should be in the end of this section
+		if(approveBlock(block, server->blocks)) { // update lastBlock to point on the new block
+			pthread_mutex_lock(&global_lastBlock_lock);
+			global_lastBlock = &block;
+			pthread_mutex_unlock(&global_lastBlock_lock);
+			pthread_cond_broadcast(&global_newBlockWasAdded); 	/* notify miners that new block was 
 																added and now they need to calculate new one */
 		}
 	}

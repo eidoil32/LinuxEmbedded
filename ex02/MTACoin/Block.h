@@ -18,7 +18,6 @@ typedef struct PartialBlock {
 } PartialBlock;
 
 // for easier readability
-typedef struct block_t**        StaticBlock;
 typedef struct block_t*         BLOCK_T;
 #define BLOCK_T_SIZE            sizeof(struct block_t)
 

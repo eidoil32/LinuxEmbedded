@@ -6,8 +6,6 @@
 struct miner {
 	int id;
 	pthread_t threadID;
-	pthread_cond_t *blockEvent, *newBlockWasAdded;
-	pthread_mutex_t *lastBlock_lock, *blockToAdd_lock;
 };
 
 // for easier readability

@@ -12,7 +12,6 @@ typedef struct program {
 }Program;
 
 void start();
-Package initPackage(void **parms);
 void programEnd(Program program);
 void loadUpServer(Server server);
 void loadUpMiners(Miners miners);
