@@ -7,7 +7,7 @@ OS := $(shell uname)
 
 PROG = program
 
-all: $(PROG) #$(HELPER) test
+all: $(PROG) test
 
 $(PROG) : program.o server.o miscellaneous.o miner.o block.o
 	@echo -n compiling $@ ... 
