@@ -10,12 +10,10 @@ BLOCK_T calculateNewBlock(Miner miner, BLOCK_T lastBlock) {
 	BLOCK_T block = initBlock(miner->id);
 	block->prev_hash = lastBlock->hash;
 	block->height = lastBlock->height + 1;
-	PartialBlock partialBlock = initPartialBlock(block);
-	block->hash = crc32(0L, (Bytef*)&partialBlock, sizeof(PartialBlock));
-	while (block->hash & MASK_LAST_16_BITS) {
-		block->nonce++;
-		partialBlock.nonce = block->nonce;
-		block->hash = crc32(0L, (Bytef*)&partialBlock, sizeof(PartialBlock));
+	block->hash = calcHash(block);
+	while (!(block->hash & MASK_LAST_16_BITS)) {
+		++(block->nonce);
+		block->hash = calcHash(block);
 	}
 
 	return block;

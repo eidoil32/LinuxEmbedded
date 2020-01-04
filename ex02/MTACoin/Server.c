@@ -7,7 +7,6 @@ Server initServer() {
 }
 
 bool checkBlock(BLOCK_T block) {
-	//printf("block: %d, calcHash=%d, block->hash=%d\n", block->hash & MASK_LAST_16_BITS, calcHash(block),block->hash);
 	return (!(block->hash & MASK_LAST_16_BITS)) && (block->hash == calcHash(block));
 }	//   if block->hash & 0xFFFF0000 == 0 ^
 
@@ -29,12 +28,10 @@ bool approveBlock(BLOCK_T block, List blocks) {
 BLOCK_T createFirstBlock() {
 	BLOCK_T block = initBlock(-1);
 	
-	PartialBlock temp = initPartialBlock(block);
-	block->hash = crc32(0L, (Bytef*)&temp, sizeof(PartialBlock));
+	block->hash = calcHash(block);
     while(!checkBlock(block)) {
         ++(block->nonce);
-		PartialBlock temp = initPartialBlock(block);
-        block->hash = crc32(0L, (Bytef*)&temp, sizeof(PartialBlock));
+        block->hash = calcHash(block);
     }
 
 	return block;
