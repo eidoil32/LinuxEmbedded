@@ -1,4 +1,3 @@
-# Makefile for ex2-q1 winter 2019A
 CFLAGS 		= -Wall
 CC 			= gcc -std=c99 -ggdb
 ZLIG_ADDON 	= -lz
@@ -7,7 +6,7 @@ OS := $(shell uname)
 
 PROG = program
 
-all: $(PROG) test
+all: $(PROG) 
 
 $(PROG) : program.o server.o miscellaneous.o miner.o block.o
 	@echo -n compiling $@ ... 
@@ -17,8 +16,3 @@ $(PROG) : program.o server.o miscellaneous.o miner.o block.o
 clean:
 	@echo removing files ...
 	@rm -vf *.o ${PROG} *.log *.tmp ${HELPER}
-	
-test:
-	@echo -n going to run test ...
-	@./$(PROG) < in.txt > out.log
-	@echo test finish [OK]
