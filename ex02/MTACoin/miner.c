@@ -51,7 +51,6 @@ BLOCK_T calculate_block(int miner_id, BLOCK_T last) {
 }
 
 BLOCK_T fake_miner_block_creator(int miner_id, BLOCK_T last) {
-    printf("in fake miner\n");
     sleep(1);
     BLOCK_T block = initBlock(miner_id, last.height, last.prev_hash);
     return block;

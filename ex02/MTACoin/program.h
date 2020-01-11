@@ -1,5 +1,6 @@
 #ifndef MTACOIN_PROGRAM_H
 #define MTACOIN_PROGRAM_H 
+#include <sched.h>
 #include "miscellaneous.h"
 #include "server.h"
 #include "miner.h"

@@ -42,5 +42,5 @@ void loadUpMiners(Miner** miners) {
 }
 
 void loadUpServer(Server* server) {
-    pthread_create(&server->server_thread, NULL, server_engine, server);
+    pthread_create(&server->server_thread, &tattr, server_engine, server);
 }
