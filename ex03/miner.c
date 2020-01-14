@@ -1,6 +1,6 @@
 #include "miner.h"
 
-Miner miner; // kind of singleton
+Miner miner; // kind of singleton // no it's not, singleton sucks and belong in crappy C#
 mqd_t miner_mq, server_mq;
 
 int main(int argc, char* argv[]) {
@@ -23,7 +23,7 @@ void miner_engine() {
     miner_attr.mq_msgsize = MQ_MINER_MAX_MSG_SIZE;
 
     mq_unlink(miner_mq_name);  // free old mq from memory
-    miner_mq = mq_open(miner_mq_name, O_CREAT, S_IRWXU | S_IRWXG, &miner_attr);
+    miner_mq = mq_open(miner_mq_name, O_CREAT | O_RDWR, S_IRWXU | S_IRWXG, &miner_attr);
     server_mq = mq_open(SERVER_MESSAGE_QUEUE, O_RDWR);
 
     if (mq_send(server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, 0) == 0) {
