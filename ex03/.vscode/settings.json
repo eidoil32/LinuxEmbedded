@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "launcher.h": "c",
+        "server.h": "c",
+        "block.h": "c"
+    }
+}
