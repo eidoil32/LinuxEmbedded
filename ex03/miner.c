@@ -9,12 +9,6 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-void open_mq(char *mq_name, struct mq_attr* attr, int max_mq_size, int max_msg_size) { 
-    attr->mq_maxmsg  = max_mq_size;
-    attr->mq_msgsize = max_msg_size;
-    miner_mq = mq_open(mq_name, O_CREAT, S_IRWXU | S_IRWXG, attr);
-}
-
 void miner_engine() {
     bool first_block = true;
     BLOCK_T current_last_block, self_new_block;
@@ -24,14 +18,17 @@ void miner_engine() {
     sprintf(miner_mq_name, "%s%d", MINER_MESSAGE_QUEUE_PREFIX, miner.miner_id);
     printf(MINER_WELCOME_MESSAGE, miner.miner_id, miner_mq_name);
 
-    struct mq_attr server_attr = { 0 }, miner_attr = { 0 };
+    struct mq_attr miner_attr = { 0 };
+    miner_attr.mq_maxmsg = MQ_MINER_MAX_MESSAGES;
+    miner_attr.mq_msgsize = MQ_MINER_MAX_MSG_SIZE;
 
     mq_unlink(miner_mq_name);  // free old mq from memory
-    open_mq(miner_mq_name, &miner_attr, MQ_MINER_MAX_MESSAGES, MQ_MINER_MAX_MSG_SIZE);
+    miner_mq = mq_open(miner_mq_name, O_CREAT, S_IRWXU | S_IRWXG, &miner_attr);
+    server_mq = mq_open(SERVER_MESSAGE_QUEUE, O_RDWR);
 
-    open_mq(SERVER_MESSAGE_QUEUE, &server_attr, MQ_SERVER_MAX_MESSAGES, MQ_SERVER_MAX_MSG_SIZE);
-    printf(MINER_SENT_CONNECTION_REQUEST, miner.miner_id, miner_mq_name);
-    mq_send(server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, 0);
+    if (mq_send(server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, 0) == 0) {
+        printf(MINER_SENT_CONNECTION_REQUEST, miner.miner_id, miner_mq_name);
+    }
 
     while(true) {
         mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
@@ -51,8 +48,10 @@ void miner_engine() {
         if (miner_attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES) continue; // the server may send an new block in the queue
 
         // sending new block to server
-        mq_send(miner_mq, (char*)&self_new_block, MQ_MINER_MAX_MSG_SIZE, 0);
-        printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
+        if (mq_send(miner_mq, (char*)&self_new_block, MQ_MINER_MAX_MSG_SIZE, 0) == 0)
+            printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
+        else 
+            fprintf(stderr, SEND_BLOCK_TO_SERVER_FAILD, miner.miner_id);
 
         do { // miner will wait until server takes the new block
             mq_getattr(miner_mq, &miner_attr); 

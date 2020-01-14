@@ -34,7 +34,7 @@ int loadUpMiners(int num_of_miners) {
                 fprintf(stderr, FORK_FAILED, MINER_STRING);
                 return -1;
             case 0:     // fork() successeded, now we can launch miner application
-                execve(SERVER_EXECVE_PROGRAM_NAME, argv, NULL);
+                execve(MINER_EXECVE_PROGRAM_NAME, argv, NULL);
                 fprintf(stderr, EXECVE_FAILED, MINER_STRING);
                 return -1;
             default:    // launcher proccess, no need to do anything..

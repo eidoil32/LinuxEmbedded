@@ -12,6 +12,7 @@
 #include <mqueue.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 typedef struct node {
     BLOCK_T block;
@@ -49,6 +50,9 @@ typedef struct list {
 #define SERVER_STRING                       "server"
 #define MINER_STRING                        "miner"
 #define SERVER_LISTENING_MSG_QUEUE          "Listening on %s\n"
+#define RECEIVED_NEW_MINER_CONNECTION		"Received connection request from miner id %d, queue name %s\n"
+#define SEND_BLOCK_TO_MINER_FAILED			"Sending block to miner %d failed!\n"
+#define SEND_BLOCK_TO_SERVER_FAILD			"Sending block from miner %d failed!\n"
 
 // MASKS:
 #define MASK_LAST_16_BITS				0xFFFF0000 // do with Bitwise AND!

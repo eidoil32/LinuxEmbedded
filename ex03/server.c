@@ -10,16 +10,20 @@ int main(int argc, char* argv[]) {
 
 void server_engine() {
     initList(&server.blocks);
-    create_first_block();
     
     mq_attributes attr = { 0 };
     attr.mq_maxmsg  = MQ_SERVER_MAX_MESSAGES;
     attr.mq_msgsize = MQ_SERVER_MAX_MSG_SIZE;
 
-    mq_unlink(SERVER_MESSAGE_QUEUE);
+    server.miners_mq_logical_size = MINERS_MQ_ARRAY_SIZE;
+    server.miners_mq_physical_size = 0;
+    server.miners_mq = (mqd_t*)malloc(MINERS_MQ_ARRAY_SIZE * sizeof(mqd_t));
 
+    mq_unlink(SERVER_MESSAGE_QUEUE);
     server.server_mq = mq_open(SERVER_MESSAGE_QUEUE, O_CREAT, S_IRWXU | S_IRWXG, &attr);
     printf(SERVER_LISTENING_MSG_QUEUE, SERVER_MESSAGE_QUEUE);
+
+    create_first_block();
 
     while (true) {
         checking_for_new_miners(&attr);
@@ -34,8 +38,9 @@ void server_engine() {
 
 void send_to_all_miners_new_block() {
     for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
-        mq_getattr(server.miners_mq[i], server.miners_attr[i]);
-        if (server.miners_attr[i]->mq_curmsgs > 0) {
+        mq_attributes attr;
+        mq_getattr(server.miners_mq[i], &attr);
+        if (attr.mq_curmsgs > 0) {
             BLOCK_T new_block;
             mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL); // empty queue for new block
         }
@@ -56,8 +61,9 @@ void checking_for_new_miners(mq_attributes *attr) {
 
 BLOCK_T checking_for_new_blocks() {
     for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
-        mq_getattr(server.miners_mq[i], server.miners_attr[i]);
-        if (server.miners_attr[i]->mq_curmsgs > 0) {
+        mq_attributes attr;
+        mq_getattr(server.miners_mq[i], &attr);
+        if (attr.mq_curmsgs > 0) {
             BLOCK_T new_block;
             mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL);
             if (new_block.height > server.blocks.tail->block.height) {
@@ -72,19 +78,18 @@ BLOCK_T checking_for_new_blocks() {
 void add_miner_to_mq_array(Miner miner) {
     char *miner_mq_name = (char*)calloc(strlen(MINER_MESSAGE_QUEUE_PREFIX) + MAX_SUPPORTED_NUM_OF_DIGITS + 1, sizeof(char));
     sprintf(miner_mq_name, "%s%d", MINER_MESSAGE_QUEUE_PREFIX, miner.miner_id);
-    mq_attributes* attr = (mq_attributes*)calloc(1, sizeof(mq_attributes));
-    mqd_t miner_mq = mq_open(miner_mq_name, 0, S_IRWXU | S_IRWXG, attr);
+    printf(RECEIVED_NEW_MINER_CONNECTION, miner.miner_id, miner_mq_name);
+    mqd_t miner_mq = mq_open(miner_mq_name, O_RDWR);
 
     if (server.miners_mq_physical_size == server.miners_mq_logical_size) {
         server.miners_mq_logical_size *= 2;
         server.miners_mq = (mqd_t*)realloc(server.miners_mq, sizeof(mqd_t)*(server.miners_mq_logical_size));
-        server.miners_attr = (mq_attributes**)realloc(server.miners_mq, sizeof(mq_attributes*)*(server.miners_mq_logical_size));
     } 
 
-    mq_send(miner_mq, (char*)&server.blocks.tail->block, MQ_SERVER_MAX_MSG_SIZE, 0); // send to miner the last block
+    if (mq_send(miner_mq, (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0) != 0) // send to miner the last block
+        fprintf(stderr, SEND_BLOCK_TO_MINER_FAILED, miner.miner_id);        
 
     server.miners_mq[server.miners_mq_physical_size++] = miner_mq;
-    server.miners_attr[server.miners_mq_physical_size - 1] = attr;
     free(miner_mq_name);
 }
 

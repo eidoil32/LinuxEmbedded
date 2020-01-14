@@ -1,6 +1,6 @@
 # Makefile for ex3
 CFLAGS 			= -Wall
-CC 				= gcc -std=c99
+CC 				= gcc -std=c99 -ggdb
 ZLIG_ADDON 		= -lz
 current_dir 	= $(shell pwd) #find current directory
 SUPPORT_LIBS 	= -L=$(current_dir) -lmiscellaneous -lblock -Wl,-rpath=$(current_dir)

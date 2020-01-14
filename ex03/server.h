@@ -9,10 +9,11 @@ typedef struct mq_attr mq_attributes;
 typedef struct server {
     mqd_t server_mq;
     mqd_t *miners_mq;
-    mq_attributes **miners_attr;
     int miners_mq_logical_size, miners_mq_physical_size;
     List blocks;
 } Server;
+
+#define MINERS_MQ_ARRAY_SIZE            2   
 
 bool approve_block(BLOCK_T *block);
 void server_engine();
