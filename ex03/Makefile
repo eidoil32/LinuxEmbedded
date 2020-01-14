@@ -27,19 +27,19 @@ $(LIBBLOCK): block.c
 	@$(CC) -shared -fPIC -o $(LIBBLOCK) block.c -L=$(current_dir) -lmiscellaneous -Wl,-rpath=$(current_dir)
 	@echo [OK]
 
-$(MINER): miner.o $(MISCELLANEOUS) $(LIBBLOCK)
+$(MINER): $(MISCELLANEOUS) $(LIBBLOCK) miner.o
 	@echo -n compiling miner $@ ... 
-	@$(CC) $(CFLAGS) miner.o -o $(MINER) $(ZLIG_ADDON) -lm $(SUPPORT_LIBS)
+	@$(CC) $(CFLAGS) miner.o -o $(MINER) $(ZLIG_ADDON) -lm $(SUPPORT_LIBS) -lrt
 	@echo  [OK]
 
-$(SERVER): server.o $(MISCELLANEOUS) $(LIBBLOCK)
+$(SERVER): $(MISCELLANEOUS) $(LIBBLOCK) server.o 
 	@echo -n compiling server $@ ... 
-	@$(CC) $(CFLAGS) server.o -o $(SERVER) $(ZLIG_ADDON) -lm $(SUPPORT_LIBS)
+	@$(CC) $(CFLAGS) server.o -o $(SERVER) $(ZLIG_ADDON) -lm $(SUPPORT_LIBS) -lrt
 	@echo  [OK]
 
-$(PROG): launcher.o $(MISCELLANEOUS) $(LIBBLOCK)
+$(PROG): $(MISCELLANEOUS) $(LIBBLOCK) launcher.o 
 	@echo -n compiling $@ ... 
-	@$(CC) $(CFLAGS) launcher.o -o $(PROG) $(ZLIG_ADDON) -lm $(SUPPORT_LIBS)
+	@$(CC) $(CFLAGS) launcher.o -o $(PROG) $(ZLIG_ADDON) -lm $(SUPPORT_LIBS) -lrt
 	@echo  [OK]
 	
 clean:

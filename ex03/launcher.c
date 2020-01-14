@@ -27,7 +27,7 @@ void program_start(int num_of_miners) {
 
 int loadUpMiners(int num_of_miners) {
     for (size_t i = 0; i < num_of_miners; ++i) {
-        char *argv[2] = { MINER_EXECVE_PROGRAM_NAME, NULL };
+        char *argv[3] = { MINER_EXECVE_PROGRAM_NAME, itoa(i + 1),  NULL };
         pid_t miner_pid = fork();
         switch (miner_pid) {
             case -1:    // fork() faild..

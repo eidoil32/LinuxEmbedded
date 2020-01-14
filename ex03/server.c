@@ -23,7 +23,24 @@ void server_engine() {
 
     while (true) {
         checking_for_new_miners(&attr);
-        
+        BLOCK_T result = checking_for_new_blocks();
+        if (result.hash != 0) { 
+            if (approve_block(&result)) {
+                send_to_all_miners_new_block();
+            }
+        }
+    }
+}
+
+void send_to_all_miners_new_block() {
+    for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
+        mq_getattr(server.miners_mq[i], server.miners_attr[i]);
+        if (server.miners_attr[i]->mq_curmsgs > 0) {
+            BLOCK_T new_block;
+            mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL); // empty queue for new block
+        }
+
+        mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_SERVER_MAX_MSG_SIZE, 0); // send to miner the last block
     }
 }
 
@@ -35,6 +52,21 @@ void checking_for_new_miners(mq_attributes *attr) {
         add_miner_to_mq_array(miner);
         mq_getattr(server.server_mq, attr); 
     }
+}
+
+BLOCK_T checking_for_new_blocks() {
+    for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
+        mq_getattr(server.miners_mq[i], server.miners_attr[i]);
+        if (server.miners_attr[i]->mq_curmsgs > 0) {
+            BLOCK_T new_block;
+            mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL);
+            if (new_block.height > server.blocks.tail->block.height) {
+                return new_block;
+            }
+        }
+    }
+
+    return EMPTY_BLOCK;
 }
 
 void add_miner_to_mq_array(Miner miner) {
@@ -49,7 +81,7 @@ void add_miner_to_mq_array(Miner miner) {
         server.miners_attr = (mq_attributes**)realloc(server.miners_mq, sizeof(mq_attributes*)*(server.miners_mq_logical_size));
     } 
 
-    mq_send(miner_mq, (char*)&server.blocks.tail->block, MQ_SERVER_MAX_MSG_SIZE, NULL); // send to miner the last block
+    mq_send(miner_mq, (char*)&server.blocks.tail->block, MQ_SERVER_MAX_MSG_SIZE, 0); // send to miner the last block
 
     server.miners_mq[server.miners_mq_physical_size++] = miner_mq;
     server.miners_attr[server.miners_mq_physical_size - 1] = attr;
@@ -67,7 +99,7 @@ void create_first_block() {
     addNode(&server.blocks, block);
 }
 
-void approve_block(BLOCK_T *block) {
+bool approve_block(BLOCK_T *block) {
     BLOCK_T prev_block_hash = server.blocks.tail->block;
     PARTIAL_BLOCK_T partial_block = create_partial_block(block);
     unsigned int hash = crc32(0L, (Bytef*)&partial_block, sizeof(PARTIAL_BLOCK_T));
@@ -84,10 +116,11 @@ void approve_block(BLOCK_T *block) {
                                                         block->prev_hash,
                                                         block->difficulty,
                                                         block->nonce);
-                return;
+                return true;
             }
         }
     }
 
     printf(SERVER_WRONG_BLOCK, block->height, block->relayed_by, block->hash, hash);
+    return false;
 }

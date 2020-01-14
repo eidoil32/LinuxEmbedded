@@ -17,7 +17,7 @@ void open_mq(char *mq_name, struct mq_attr* attr, int max_mq_size, int max_msg_s
 
 void miner_engine() {
     bool first_block = true;
-    BLOCK_T current_last_block, self_new_block, temp_block;
+    BLOCK_T current_last_block, self_new_block;
 
     //creating message queue name "/miner_mq_X" and X is the ID of miner
     char *miner_mq_name = (char*)calloc(strlen(MINER_MESSAGE_QUEUE_PREFIX) + MAX_SUPPORTED_NUM_OF_DIGITS + 1, sizeof(char));
@@ -31,12 +31,12 @@ void miner_engine() {
 
     open_mq(SERVER_MESSAGE_QUEUE, &server_attr, MQ_SERVER_MAX_MESSAGES, MQ_SERVER_MAX_MSG_SIZE);
     printf(MINER_SENT_CONNECTION_REQUEST, miner.miner_id, miner_mq_name);
-    mq_send(server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, NULL);
+    mq_send(server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, 0);
 
     while(true) {
-        mq_receive(miner_mq, (char*)&temp_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
-        printf(MINER_RECEIVED_BLOCK,    first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX, 
-                                        miner.miner_id, 
+        mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
+        printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
+                                        (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
                                         current_last_block.relayed_by,
                                         current_last_block.height,
                                         current_last_block.timestamp,
@@ -51,7 +51,7 @@ void miner_engine() {
         if (miner_attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES) continue; // the server may send an new block in the queue
 
         // sending new block to server
-        mq_send(miner_mq, (char*)&self_new_block, MQ_MINER_MAX_MSG_SIZE, NULL);
+        mq_send(miner_mq, (char*)&self_new_block, MQ_MINER_MAX_MSG_SIZE, 0);
         printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
 
         do { // miner will wait until server takes the new block

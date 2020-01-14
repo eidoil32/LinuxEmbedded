@@ -35,3 +35,10 @@ int getCurrentTimeStamp() {
 	free(timestamp);
     return result;
 }
+
+char *itoa(int number) {
+    char *result = (char*)calloc(1, MAX_SUPPORTED_NUM_OF_DIGITS + 1 * sizeof(char));
+    sprintf(result, "%d", number);
+
+    return result;
+}
