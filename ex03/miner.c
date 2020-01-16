@@ -23,7 +23,7 @@ void miner_engine() {
     miner_attr.mq_msgsize = MQ_MINER_MAX_MSG_SIZE;
 
     mq_unlink(miner_mq_name);  // free old mq from memory
-    miner_mq = mq_open(miner_mq_name, O_CREAT, S_IRWXU | S_IRWXG, &miner_attr);
+    miner_mq = mq_open(miner_mq_name, O_CREAT | O_RDWR, S_IRWXU | S_IRWXG, &miner_attr);
     server_mq = mq_open(SERVER_MESSAGE_QUEUE, O_RDWR);
 
     if (mq_send(server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, 0) == 0) {
@@ -31,46 +31,37 @@ void miner_engine() {
     }
 
     while(true) {
-        mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
-        printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
-                                        (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
-                                        current_last_block.relayed_by,
-                                        current_last_block.height,
-                                        current_last_block.timestamp,
-                                        current_last_block.hash,
-                                        current_last_block.prev_hash,
-                                        current_last_block.difficulty,
-                                        current_last_block.nonce);
-        first_block = false;    
-        self_new_block = calculate_block(miner.miner_id, current_last_block);
+        mq_getattr(miner_mq, &miner_attr);
+        if (miner_attr.mq_curmsgs > 0) {
+            mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
+            printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
+                                            (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
+                                            current_last_block.relayed_by,
+                                            current_last_block.height,
+                                            current_last_block.timestamp,
+                                            current_last_block.hash,
+                                            current_last_block.prev_hash,
+                                            current_last_block.difficulty,
+                                            current_last_block.nonce);
+            first_block = false;    
+            self_new_block = calculate_block(miner.miner_id, current_last_block);
 
-        mq_getattr(miner_mq, &miner_attr); 
-        if (miner_attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES) continue; // the server may send an new block in the queue
-
-        // sending new block to server
-        if (mq_send(miner_mq, (char*)&self_new_block, MQ_MINER_MAX_MSG_SIZE, 0) == 0)
-            printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
-        else 
-            fprintf(stderr, SEND_BLOCK_TO_SERVER_FAILD, miner.miner_id);
-
-        do { // miner will wait until server takes the new block
             mq_getattr(miner_mq, &miner_attr); 
-        } while (miner_attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES);
+            if (miner_attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES) continue; // the server may send an new block in the queue
+
+            // sending new block to server
+            if (mq_send(miner_mq, (char*)&self_new_block, MQ_MINER_MAX_MSG_SIZE, 0) == 0)
+                printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
+            else {
+                printf("errno: %s\n", strerror(errno));
+                fprintf(stderr, SEND_BLOCK_TO_SERVER_FAILD, miner.miner_id);
+            }
+
+            do { // miner will wait until server takes the new block
+                mq_getattr(miner_mq, &miner_attr); 
+            } while (miner_attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES);
+        }
     }
-}
-
-BLOCK_T* copy_my_block(BLOCK_T block) {
-    BLOCK_T* ptr = (BLOCK_T*)malloc(sizeof(BLOCK_T));
-
-    ptr->difficulty = block.difficulty;
-    ptr->hash = block.hash;
-    ptr->height = block.height;
-    ptr->nonce = block.nonce;
-    ptr->prev_hash = block.prev_hash;
-    ptr->relayed_by = block.relayed_by;
-    ptr->timestamp = block.timestamp;
-
-    return ptr;
 }
 
 BLOCK_T calculate_block(int miner_id, BLOCK_T last) {

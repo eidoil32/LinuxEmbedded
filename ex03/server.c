@@ -27,12 +27,7 @@ void server_engine() {
 
     while (true) {
         checking_for_new_miners(&attr);
-        BLOCK_T result = checking_for_new_blocks();
-        if (result.hash != 0) { 
-            if (approve_block(&result)) {
-                send_to_all_miners_new_block();
-            }
-        }
+        checking_for_new_blocks();
     }
 }
 
@@ -44,8 +39,7 @@ void send_to_all_miners_new_block() {
             BLOCK_T new_block;
             mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL); // empty queue for new block
         }
-
-        mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_SERVER_MAX_MSG_SIZE, 0); // send to miner the last block
+        mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0); // send to miner the last block
     }
 }
 
@@ -59,20 +53,20 @@ void checking_for_new_miners(mq_attributes *attr) {
     }
 }
 
-BLOCK_T checking_for_new_blocks() {
+void checking_for_new_blocks() {
     for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
         mq_attributes attr;
         mq_getattr(server.miners_mq[i], &attr);
         if (attr.mq_curmsgs > 0) {
             BLOCK_T new_block;
             mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL);
-            if (new_block.height > server.blocks.tail->block.height) {
-                return new_block;
-            }
+            if (approve_block(&new_block)) {
+                send_to_all_miners_new_block();
+            } /* else {
+                mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0)
+            } */
         }
     }
-
-    return EMPTY_BLOCK;
 }
 
 void add_miner_to_mq_array(Miner miner) {
@@ -112,7 +106,6 @@ bool approve_block(BLOCK_T *block) {
     if (block->prev_hash == prev_block_hash.hash) {
         if (block->height == (prev_block_hash.height + 1)) {
             if (hash == block->hash) {
-                // locking 'global_last_block_lock' to add an new block to list (so other miners will mine new block with the correct parameters)
                 addNode(&server.blocks, *block);
                 printf(SERVER_APPROVED_BLOCK_BY_MINER,  block->relayed_by,
                                                         block->height, 

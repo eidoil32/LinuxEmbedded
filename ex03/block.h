@@ -22,6 +22,7 @@ typedef struct PARTIAL_BLOCK_T {
 
 BLOCK_T initBlock(int miner_id, int height, unsigned int prev_hash);
 PARTIAL_BLOCK_T create_partial_block(BLOCK_T *block);
+BLOCK_T* copy_my_block(BLOCK_T block);
 
 #define EMPTY_BLOCK                 (BLOCK_T){ 0, 0, 0, 0, 0, 0, 0 }
 

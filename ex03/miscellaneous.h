@@ -24,6 +24,19 @@ typedef struct list {
     size_t size;
 } List;
 
+typedef enum { E_MINER, E_BLOCK } mq_messages_types;
+
+typedef struct mq_message {
+	mq_messages_types type;
+	char data[];
+} MQ_Message;
+
+#define MAX(a,b)                                    (a > b) ? a : b
+#define MQ_MINER_MAX_MESSAGES                       1
+#define MQ_MINER_MAX_MSG_SIZE                       sizeof(BLOCK_T)
+#define MQ_SERVER_MAX_MESSAGES                      10
+#define MQ_SERVER_MAX_MSG_SIZE                      MAX(sizeof(Miner), sizeof(BLOCK_T))
+
 #define SERVER_MESSAGE_QUEUE            "/server_mq"
 #define MINER_MESSAGE_QUEUE_PREFIX      "/miner_mq_"
 #define MINER_EXECVE_PROGRAM_NAME       "./miner"
