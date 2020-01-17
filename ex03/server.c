@@ -37,7 +37,6 @@ void server_engine() {
                 break;
             case E_BLOCK:
                 block = ((BLOCK_T*)message->data);
-                PRINT_BLOCK((*block));
                 if (approve_block(block)) {
                     send_to_all_miners_new_block();
                 }
@@ -53,6 +52,10 @@ void send_to_all_miners_new_block() {
     for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
         mq_attributes attr;
         mq_getattr(server.miners_mq[i], &attr);
+        if (attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES) {
+            BLOCK_T temp;
+            mq_receive(server.miners_mq[i], (char*)&temp, MQ_MINER_MAX_MSG_SIZE, 0); // free place for the newest block
+        }
         mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0);
     }
 }
@@ -69,7 +72,7 @@ void add_miner_to_mq_array(Miner miner) {
     } 
 
     if (mq_send(miner_mq, (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0) != 0) // send to miner the last block
-        fprintf(stderr, SEND_BLOCK_TO_MINER_FAILED, miner.miner_id);        
+        fprintf(stderr, SEND_BLOCK_TO_MINER_FAILED, miner.miner_id);
 
     server.miners_mq[server.miners_mq_physical_size++] = miner_mq;
     free(miner_mq_name);

@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 
 void miner_engine() {
     MQ_Message *message;
-    BLOCK_T current_last_block, self_new_block;
+    BLOCK_T current_last_block = EMPTY_BLOCK, self_new_block;
     bool first_block = true;
 
     //creating message queue name "/miner_mq_X" and X is the ID of miner
@@ -35,29 +35,38 @@ void miner_engine() {
     }
 
     while(true) {
-        mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
-        printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
-                                        (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
-                                        current_last_block.relayed_by,
-                                        current_last_block.height,
-                                        current_last_block.timestamp,
-                                        current_last_block.hash,
-                                        current_last_block.prev_hash,
-                                        current_last_block.difficulty,
-                                        current_last_block.nonce);
-        first_block = false;    
-        self_new_block = calculate_block(miner.miner_id, current_last_block);
+        mq_getattr(miner_mq, &miner_attr);
+        if (miner_attr.mq_curmsgs > 0 || first_block) {
+            BLOCK_T newes_block = current_last_block;
+            mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
+            if (newes_block.height <= current_last_block.height) {
+                printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
+                                                (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
+                                                current_last_block.relayed_by,
+                                                current_last_block.height,
+                                                current_last_block.timestamp,
+                                                current_last_block.hash,
+                                                current_last_block.prev_hash,
+                                                current_last_block.difficulty,
+                                                current_last_block.nonce);
+            } else {
+                current_last_block = newes_block;
+            }
+            first_block = false;    
+        }
 
-        // sending new block to server
-        message = (MQ_Message*)malloc(sizeof(MQ_Message) + sizeof(BLOCK_T));
-        message->type = E_BLOCK;
-        *((BLOCK_T*)message->data) = self_new_block;
-        PRINT_BLOCK(self_new_block);
-        PRINT_BLOCK((*((BLOCK_T*)message->data)));
-        if (mq_send(server_mq, (char*)message, MQ_SERVER_MAX_MSG_SIZE, 0) == 0)
-            printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
-        else {
-            fprintf(stderr, SEND_BLOCK_TO_SERVER_FAILD, miner.miner_id);
+        if (current_last_block.hash != 0) {
+            self_new_block = calculate_block(miner.miner_id, current_last_block);
+
+            // sending new block to server
+            message = (MQ_Message*)malloc(sizeof(MQ_Message) + sizeof(BLOCK_T));
+            message->type = E_BLOCK;
+            *((BLOCK_T*)message->data) = self_new_block;
+            if (mq_send(server_mq, (char*)message, MQ_SERVER_MAX_MSG_SIZE, 0) == 0)
+                printf(MINER_MINED_NEW_BLOCK, miner.miner_id, self_new_block.height, self_new_block.hash);
+            else {
+                fprintf(stderr, SEND_BLOCK_TO_SERVER_FAILD, miner.miner_id);
+            }
         }
     }
 }

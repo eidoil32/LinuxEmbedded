@@ -32,10 +32,10 @@ typedef struct mq_message {
 } MQ_Message;
 
 #define MAX(a,b)                                    (a > b) ? a : b
-#define MQ_MINER_MAX_MESSAGES                       1
+#define MQ_MINER_MAX_MESSAGES                       10
 #define MQ_MINER_MAX_MSG_SIZE                       sizeof(BLOCK_T)
 #define MQ_SERVER_MAX_MESSAGES                      10
-#define MQ_SERVER_MAX_MSG_SIZE                      MAX(sizeof(Miner), sizeof(BLOCK_T))
+#define MQ_SERVER_MAX_MSG_SIZE                      MAX(sizeof(Miner), sizeof(BLOCK_T)) + sizeof(MQ_Message)
 
 #define SERVER_MESSAGE_QUEUE            "/server_mq"
 #define MINER_MESSAGE_QUEUE_PREFIX      "/miner_mq_"
@@ -70,7 +70,7 @@ typedef struct mq_message {
 #define PRINT_BLOCK(block)					printf("relayed_by(%d),"\
 										    " height(%d), timestamp(%d), hash(0x%02x), prev_hash(0x%02x)," \
 										    " difficulty(%d), nonce(%d)\n",block.relayed_by, block.height, block.timestamp, \
-											block.hash, block.prev_hash, block.difficulty, block.nonce)
+											block.hash, block.prev_hash, block.difficulty, block.nonce) // for debug and testing...
 
 // MASKS:
 #define MASK_LAST_16_BITS				0xFFFF0000 // do with Bitwise AND!
