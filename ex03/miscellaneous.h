@@ -56,7 +56,7 @@ typedef struct mq_message {
 										    " difficulty(%d), nonce(%d)\n"
 #define MINER_SENT_CONNECTION_REQUEST       "Miner %d sent connect request on %s\n"
 #define MINER_WELCOME_MESSAGE               "Miner id = %d, queue name = %s\n"
-#define MINER_RECEIVED_FIRST_BLOCK_PREFIX   " first block"
+#define MINER_RECEIVED_FIRST_BLOCK_PREFIX   "first block"
 #define FORK_FAILED                         "fork() failed, %s not created!\n"
 #define EXECVE_FAILED                       "execve() failed, %s not created!\n"
 #define LOAD_UP_FAILD                       "loading up %s failed!\n"
@@ -66,6 +66,11 @@ typedef struct mq_message {
 #define RECEIVED_NEW_MINER_CONNECTION		"Received connection request from miner id %d, queue name %s\n"
 #define SEND_BLOCK_TO_MINER_FAILED			"Sending block to miner %d failed!\n"
 #define SEND_BLOCK_TO_SERVER_FAILD			"Sending block from miner %d failed!\n"
+#define UNVALID_MESSAGE						"Server: got invalid message!\n"
+#define PRINT_BLOCK(block)					printf("relayed_by(%d),"\
+										    " height(%d), timestamp(%d), hash(0x%02x), prev_hash(0x%02x)," \
+										    " difficulty(%d), nonce(%d)\n",block.relayed_by, block.height, block.timestamp, \
+											block.hash, block.prev_hash, block.difficulty, block.nonce)
 
 // MASKS:
 #define MASK_LAST_16_BITS				0xFFFF0000 // do with Bitwise AND!

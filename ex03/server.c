@@ -9,6 +9,9 @@ int main(int argc, char* argv[]) {
 }
 
 void server_engine() {
+    MQ_Message *message = (MQ_Message*)malloc(MQ_SERVER_MAX_MSG_SIZE);
+    Miner miner;
+    BLOCK_T *block;
     initList(&server.blocks);
     
     mq_attributes attr = { 0 };
@@ -26,8 +29,23 @@ void server_engine() {
     create_first_block();
 
     while (true) {
-        checking_for_new_miners(&attr);
-        checking_for_new_blocks();
+        mq_receive(server.server_mq, (char*)message, MQ_SERVER_MAX_MSG_SIZE, NULL);
+        switch(message->type) {
+            case E_MINER:
+                miner = *((Miner*)message->data);
+                add_miner_to_mq_array(miner);
+                break;
+            case E_BLOCK:
+                block = ((BLOCK_T*)message->data);
+                PRINT_BLOCK((*block));
+                if (approve_block(block)) {
+                    send_to_all_miners_new_block();
+                }
+                break;
+            default:
+                fprintf(stderr, UNVALID_MESSAGE);
+                break;
+        }
     }
 }
 
@@ -35,37 +53,7 @@ void send_to_all_miners_new_block() {
     for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
         mq_attributes attr;
         mq_getattr(server.miners_mq[i], &attr);
-        if (attr.mq_curmsgs > 0) {
-            BLOCK_T new_block;
-            mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL); // empty queue for new block
-        }
-        mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0); // send to miner the last block
-    }
-}
-
-void checking_for_new_miners(mq_attributes *attr) {
-    mq_getattr(server.server_mq, attr); 
-    while (attr->mq_curmsgs > 0) {
-        Miner miner;
-        mq_receive(server.server_mq, (char*)&miner, MQ_SERVER_MAX_MSG_SIZE, NULL);
-        add_miner_to_mq_array(miner);
-        mq_getattr(server.server_mq, attr); 
-    }
-}
-
-void checking_for_new_blocks() {
-    for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
-        mq_attributes attr;
-        mq_getattr(server.miners_mq[i], &attr);
-        if (attr.mq_curmsgs > 0) {
-            BLOCK_T new_block;
-            mq_receive(server.miners_mq[i], (char*)&new_block, MQ_MINER_MAX_MSG_SIZE, NULL);
-            if (approve_block(&new_block)) {
-                send_to_all_miners_new_block();
-            } /* else {
-                mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0)
-            } */
-        }
+        mq_send(server.miners_mq[i], (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0);
     }
 }
 

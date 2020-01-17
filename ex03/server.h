@@ -18,9 +18,7 @@ typedef struct server {
 bool approve_block(BLOCK_T *block);
 void server_engine();
 void create_first_block();
-void checking_for_new_miners(struct mq_attr *attr);
 void add_miner_to_mq_array(Miner miner_mq);
-void checking_for_new_blocks();
 void send_to_all_miners_new_block();
 
 #endif
