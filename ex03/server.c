@@ -18,8 +18,8 @@ void server_engine() {
     attr.mq_maxmsg  = MQ_SERVER_MAX_MESSAGES;
     attr.mq_msgsize = MQ_SERVER_MAX_MSG_SIZE;
 
-    server.miners_mq_logical_size = MINERS_MQ_ARRAY_SIZE;
-    server.miners_mq_physical_size = 0;
+    server.miners_mq_capacity = MINERS_MQ_ARRAY_SIZE;
+    server.miners_mq_size = 0;
     server.miners_mq = (mqd_t*)malloc(MINERS_MQ_ARRAY_SIZE * sizeof(mqd_t));
 
     mq_unlink(SERVER_MESSAGE_QUEUE);
@@ -49,7 +49,7 @@ void server_engine() {
 }
 
 void send_to_all_miners_new_block() {
-    for (size_t i = 0; i < server.miners_mq_physical_size; ++i) {
+    for (size_t i = 0; i < server.miners_mq_size; ++i) {
         mq_attributes attr;
         mq_getattr(server.miners_mq[i], &attr);
         if (attr.mq_curmsgs == MQ_MINER_MAX_MESSAGES) {
@@ -66,15 +66,15 @@ void add_miner_to_mq_array(Miner miner) {
     printf(RECEIVED_NEW_MINER_CONNECTION, miner.miner_id, miner_mq_name);
     mqd_t miner_mq = mq_open(miner_mq_name, O_RDWR);
 
-    if (server.miners_mq_physical_size == server.miners_mq_logical_size) {
-        server.miners_mq_logical_size *= 2;
-        server.miners_mq = (mqd_t*)realloc(server.miners_mq, sizeof(mqd_t)*(server.miners_mq_logical_size));
+    if (server.miners_mq_size == server.miners_mq_capacity) {
+        server.miners_mq_capacity *= 2;
+        server.miners_mq = (mqd_t*)realloc(server.miners_mq, sizeof(mqd_t)*(server.miners_mq_capacity));
     } 
 
     if (mq_send(miner_mq, (char*)&server.blocks.tail->block, MQ_MINER_MAX_MSG_SIZE, 0) != 0) // send to miner the last block
         fprintf(stderr, SEND_BLOCK_TO_MINER_FAILED, miner.miner_id);
 
-    server.miners_mq[server.miners_mq_physical_size++] = miner_mq;
+    server.miners_mq[server.miners_mq_size++] = miner_mq;
     free(miner_mq_name);
 }
 

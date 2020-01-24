@@ -9,7 +9,7 @@ typedef struct mq_attr mq_attributes;
 typedef struct server {
     mqd_t server_mq;
     mqd_t *miners_mq;
-    int miners_mq_logical_size, miners_mq_physical_size;
+    int miners_mq_capacity, miners_mq_size;
     List blocks;
 } Server;
 
