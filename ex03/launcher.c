@@ -46,6 +46,7 @@ int loadUpMiners(int num_of_miners) {
 }
 
 int loadUpServer() {
+	mq_unlink(SERVER_MESSAGE_QUEUE); // in case that one of the miners will wake up before the server
     char *argv[2] = { SERVER_EXECVE_PROGRAM_NAME, NULL };
     pid_t server_pid = fork();
     switch (server_pid) {

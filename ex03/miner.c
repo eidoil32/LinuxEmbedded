@@ -35,25 +35,23 @@ void miner_engine() {
     }
 
     while(true) {
-        mq_getattr(miner_mq, &miner_attr);
-        if (miner_attr.mq_curmsgs > 0 || first_block) {
-            BLOCK_T newes_block = current_last_block;
-            mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
-            if (newes_block.height <= current_last_block.height) {
-                printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
-                                                (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
-                                                current_last_block.relayed_by,
-                                                current_last_block.height,
-                                                current_last_block.timestamp,
-                                                current_last_block.hash,
-                                                current_last_block.prev_hash,
-                                                current_last_block.difficulty,
-                                                current_last_block.nonce);
-            } else {
-                current_last_block = newes_block;
-            }
-            first_block = false;    
+        BLOCK_T newes_block = current_last_block;
+        mq_receive(miner_mq, (char*)&current_last_block, MQ_MINER_MAX_MSG_SIZE, NULL); // miner will wait until server will send it the last block
+        if (newes_block.height <= current_last_block.height) {
+            printf(MINER_RECEIVED_BLOCK,    miner.miner_id,
+                                            (first_block ? MINER_RECEIVED_FIRST_BLOCK_PREFIX : MINER_RECEIVED_BLOCK_PREFIX), 
+                                            current_last_block.relayed_by,
+                                            current_last_block.height,
+                                            current_last_block.timestamp,
+                                            current_last_block.hash,
+                                            current_last_block.prev_hash,
+                                            current_last_block.difficulty,
+                                            current_last_block.nonce);
+        } else {
+            current_last_block = newes_block;
         }
+        first_block = false;    
+
 
         if (current_last_block.hash != 0) {
             self_new_block = calculate_block(miner.miner_id, current_last_block);
