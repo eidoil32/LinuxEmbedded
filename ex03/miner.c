@@ -1,6 +1,6 @@
 #include "miner.h"
 
-Miner miner; // kind of singleton
+Miner miner; // kind of singleton // no it's not, singleton sucks and belong in crappy C#
 mqd_t miner_mq, server_mq;
 
 int main(int argc, char* argv[]) {
